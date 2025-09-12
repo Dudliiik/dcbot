@@ -59,7 +59,7 @@ async def feedback(ctx):
         return
 
     feedback_cooldowns[user_id] = now
-    await ctx.send("<@&1415013619246039085>")  # ID Feedback role
+    await ctx.send("<@&1135502050575261758>")  # ID Feedback role
 
 @bot.command()
 async def wip(ctx):
@@ -81,7 +81,7 @@ async def wip(ctx):
         return
 
     wip_cooldowns[user_id] = now
-    await ctx.send("<@&1415013619246039083>")  # ID WIP role
+    await ctx.send("<@&1282267309477728317>")  # ID WIP role
 
 @bot.command()
 async def help(ctx):
@@ -99,7 +99,7 @@ async def help(ctx):
         return
 
     help_cooldowns[user_id] = now
-    await ctx.send("<@&1415013619246039084>")  # ID Help role
+    await ctx.send("<@&1135502182825852988>")  # ID Help role
 
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
