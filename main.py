@@ -101,6 +101,12 @@ async def help(ctx):
     help_cooldowns[user_id] = now
     await ctx.send("<@&1135502182825852988>")  # ID Help role
 
+
+@commands.has_permissions(administrator = True)
+@client.command(aliases = ["purge", "delete"])
+async def delete(ctx, amount : int):
+    await ctx.channel.purge(limit=amount+1)
+
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
     Thread(target=run_web).start()
