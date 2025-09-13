@@ -120,10 +120,12 @@ class CloseButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="Close", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Close", emoji="🔒", style=discord.ButtonStyle.gray)
     async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Ticket deleting", ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
+        await discord.utils.sleep_until(discord.utils.utcnow() + discord.utils.timedelta(seconds=0.5))
         await interaction.channel.delete()
+
 
 # ---------------- Dropdown pre kategórie ----------------
 class TicketCategory(discord.ui.Select):
@@ -144,7 +146,7 @@ class TicketCategory(discord.ui.Select):
         # Kontrola existujúceho ticket kanálu
         ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}-{user.discriminator}")
         if ticket_channel:
-            await interaction.followup.send(f"You already have a ticket: {ticket_channel.mention}", ephemeral=True)
+            await interaction.followup.send(f"You already have a ticket - {ticket_channel.mention}", ephemeral=True)
             return
 
         overwrites = {
