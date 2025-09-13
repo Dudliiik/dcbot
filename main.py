@@ -178,9 +178,6 @@ class TicketDropdownView(discord.ui.View):
         self.add_item(TicketCategory())
 
 # ---------------- Bot setup ----------------
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=PREFIX, intents=intents)
-
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
@@ -201,7 +198,7 @@ async def ticket_command(ctx):
         color=discord.Color.green()
     )
     await ctx.send(embed=embed, view=TicketDropdownView())
-    
+
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
     Thread(target=run_web).start()
