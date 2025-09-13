@@ -28,7 +28,6 @@ intents = discord.Intents.default()
 intents.message_content = True 
 
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
-client = commands.Bot(command_prefix="?", intents=intents)
 
 # ---------------- Cooldowns ----------------
 feedback_cooldowns = {}  
@@ -104,7 +103,7 @@ async def help(ctx):
 
 
 @commands.has_permissions(administrator = True)
-@client.command(aliases = ["purge"])
+@bot.command(aliases = ["purge"])
 async def delete(ctx, amount : int):
     await ctx.channel.purge(limit=amount+1)
     confirmation = await ctx.send(f"Purged {amount} messages", delete_after = 3)
