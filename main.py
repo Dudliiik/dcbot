@@ -60,7 +60,7 @@ class aclient(discord.Client):
 client = aclient()
 tree=app_commands.CommandTree(client)
 
-@tree.command(guild=discord.Object(id=1102968474894082081), name='ticket')
+@tree.command(guild=discord.Object, name='ticket')
 async def ticketing(interaction:discord.Interaction):
     embed = discord.Embed(title="Welcome! You can create a ticket for any of the categories listed below. Please ensure you select the appropriate category for your issue. If your concern doesn't align with any of the options provided, feel free to create a general support ticket. Thank you!" \
     "Warn system for wrong tickets. " \
