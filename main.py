@@ -112,55 +112,49 @@ async def delete(ctx, amount : int):
 import discord
 from discord import app_commands, utils
 
+GUILD_ID = 1415013619246039082  # tvoj server
+
 class TicketLauncher(discord.ui.View):
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="Create a ticket", style=discord.ButtonStyle.blurple, custom_id="ticket_button")
-    async def ticket_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Kontrola existujúceho ticket kanálu
+    @discord.ui.button(label="Create a ticket", style=discord.ButtonStyle.blurple)
+    async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         ticket = utils.get(interaction.guild.channels, name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}")
-        if ticket is not None:
-            await interaction.response.send_message(f"You already have a ticket open at {ticket.mention}!", ephemeral=True)
+        if ticket:
+            await interaction.response.send_message(f"You already have a ticket at {ticket.mention}!", ephemeral=True)
         else:
             overwrites = {
                 interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
-                interaction.user: discord.PermissionOverwrite(view_channel=True, send_messages=True, attach_files=True, embed_links=True),
+                interaction.user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
                 interaction.guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)
             }
             channel = await interaction.guild.create_text_channel(
                 name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}",
-                overwrites=overwrites,
-                reason=f"Ticket for {interaction.user}"
+                overwrites=overwrites
             )
             await channel.send(f"{interaction.user.mention} created a ticket!")
             await interaction.response.send_message(f"Opened a ticket - {channel.mention}", ephemeral=True)
 
 class MyClient(discord.Client):
     def __init__(self):
-        intents = discord.Intents.all()  # Potrebujeme prístup ku kanálom
+        intents = discord.Intents.all()
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self):
-        # Synchronizácia slash commandov na konkrétnom serveri
-        guild = discord.Object(id=1415013619246039082)  # Zmeň na svoj guild ID
-        self.tree.copy_global_to(guild=guild)
+        guild = discord.Object(id=GUILD_ID)
+
+        # Definovanie slash commandu
+        @self.tree.command(guild=guild, name="ticket", description="Launches the ticket system")
+        async def ticketing(interaction: discord.Interaction):
+            embed = discord.Embed(title="Ticket System", description="Click the button to create a ticket!", color=discord.Color.blue())
+            await interaction.response.send_message(embed=embed, view=TicketLauncher(), ephemeral=True)
+
         await self.tree.sync(guild=guild)
         print("Slash commands synced!")
 
-    async def on_ready(self):
-        print(f"We have logged in as {self.user}.")
-
 client = MyClient()
-
-@client.tree.command(guild=discord.Object(id=1415013619246039082), name="ticket", description="Launches the ticketing system")
-async def ticketing(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="Welcome! You can create a ticket for any of the categories listed below...",
-        color=discord.Colour.dark_blue()
-    )
-    await interaction.response.send_message(embed=embed, view=TicketLauncher(), ephemeral=True)
 
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
