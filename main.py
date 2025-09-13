@@ -1,16 +1,33 @@
 import discord
 from discord.ext import commands
+from discord import app_commands, utils
 import time
 import os
 from flask import Flask
 from threading import Thread
 from dotenv import load_dotenv
 
+class ticket_launcher(discord.ui.View):
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
+
+@discord.ui.button(label = "Open a ticket!", style = discord.ButtonStyle.blurple, custom_id="ticket_button")
+async def ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+    ticket = utils.get(interaction.guild.text_channels, name = f"ticket-{interaction.user.name}-{interaction.user.discriminator}")
+    if ticket is not None: await interaction.response.send_message(f"You already have a ticket open at {ticket.mention}", ephemeral=True)
+    else:
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(view_channel = False),
+            interaction.user: discord.PermissionOverwrite(view_channel = True, send_messages = True, attach_files = True, embed_links = True),
+            interaction.guild.me: discord.PermissionOverwrite(view_channel = True, send_messages = True, read_message_history = True)
+        }
+        channel = await interaction.guild.create_text_channel(name = f"ticket-{interaction.user.name}-{interaction.user.discriminator}", 
+        overwrites=overwrites, reason=f"Ticket-{interaction.user}")
+        await interaction.response.send_message(f"Ticket opened - {channel.mention}", ephemeral=True)
+
 # ---------------- Load .env ----------------
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-if not TOKEN:
-    raise ValueError("DISCORD_TOKEN environment variable not set")
 
 # ---------------- Flask server ----------------
 app = Flask(__name__)
@@ -35,6 +52,24 @@ wip_cooldowns = {}
 help_cooldowns = {}      
 
 # ---------------- Commands ----------------
+class aclient(discord.Client):
+    def __init__(self):
+        super().__init__(intents=discord.Intents.default())
+        self.synced = True
+
+client = aclient()
+tree=app_commands.CommandTree(client)
+
+@tree.command(guild=discord.Object(id=1102968474894082081), name='ticket')
+async def ticketing(interaction:discord.Interaction):
+    embed = discord.Embed(title="Welcome! You can create a ticket for any of the categories listed below. Please ensure you select the appropriate category for your issue. If your concern doesn't align with any of the options provided, feel free to create a general support ticket. Thank you!" \
+    "Warn system for wrong tickets. " \
+    "A straight warning will be issued for opening incorrect tickets for incorrect reasons. It is quite clear what ticket you need to open for what problem.", color=discord.Colour.dark_blue())
+    await interaction.channel.send(embed=embed, view = ticket)
+    await interaction.response.send_message("Ticket system launched!", ephemeral=True)
+
+
+
 @bot.event
 async def on_ready():
     print(f"User logged as {bot.user}")
