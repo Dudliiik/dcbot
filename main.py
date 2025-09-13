@@ -114,47 +114,52 @@ from discord import app_commands, utils
 
 class ticket_launcher(discord.ui.View):
     def __init__(self) -> None:
-        super().__init__(timeout = None)
+        super().__init__(timeout=None)
 
-    @discord.ui.button(label="Create a ticket", style=discord.ButtonStyle.blurple,custom_id="ticket_button")
-    async def ticket(self, interaction:discord.Interaction, button:discord.ui.Button):
-        ticket = utils.get(interaction.response.send_message, name = f"ticket-{interaction.user.name}-{interaction.user.discriminator}")
-        if ticket is not None: await interaction.response.send_message(f"You already have a ticket open at {ticket.mention}!", ephemeral=True)
+    @discord.ui.button(label="Create a ticket", style=discord.ButtonStyle.blurple, custom_id="ticket_button")
+    async def ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        ticket = utils.get(interaction.guild.channels, name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}")
+        if ticket is not None:
+            await interaction.response.send_message(f"You already have a ticket open at {ticket.mention}!", ephemeral=True)
         else:
             overwrites = {
-                interaction.guild.default_role:discord.PermissionOverwrite(view_channel=False),
-                interaction.user:discord.PermissionOverwrite(view_channel=True, send_messages=True,attach_files=True,embed_links=True),
-                interaction.guild.me:discord.PermissionOverwrite(view_channel=True,send_messages=True,read_message_history=True)    
+                interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                interaction.user: discord.PermissionOverwrite(view_channel=True, send_messages=True, attach_files=True, embed_links=True),
+                interaction.guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)
             }
-            channel = await interaction.guild.create_text_channel(name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}", overwrites=overwrites, reason=f"Ticket for {interaction.user}")
+            channel = await interaction.guild.create_text_channel(
+                name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}",
+                overwrites=overwrites,
+                reason=f"Ticket for {interaction.user}"
+            )
             await channel.send(f"{interaction.user.mention} created a ticket!")
             await interaction.response.send_message(f"Opened a ticket - {channel.mention}", ephemeral=True)
 
 class aclient(discord.Client):
     def __init__(self):
-        super().__init__(intents = discord.Intents.default())
+        intents = discord.Intents.default()
+        super().__init__(intents=intents)
+        self.tree = app_commands.CommandTree(self)
         self.synced = False
-        self.added = False 
+
+    async def setup_hook(self):
+        # Synchronizácia slash commandov
+        guild = discord.Object(id=1415013619246039082)
+        self.tree.copy_global_to(guild=guild)
+        await self.tree.sync(guild=guild)
 
     async def on_ready(self):
-        await self.wait_until_ready()
-        if not self.synced: #check if slash commands have been synced
-            await tree.sync(guild = discord.Object(id=1415013619246039082)) #guild specific: leave blank if global (global registration can take 1-24 hours)
-            self.synced = True
-        if not self.added:
-            self.added = True
         print(f"We have logged in as {self.user}.")
 
 client = aclient()
-tree = app_commands.CommandTree(client)
 
-@tree.command(guild = discord.Object(id=1415013619246039082), name = 'ticket', description='Launches the ticketing system') #guild specific slash command
+@client.tree.command(guild=discord.Object(id=1415013619246039082), name='ticket', description='Launches the ticketing system')
 async def ticketing(interaction: discord.Interaction):
-    embed = discord.Embed(title="Welcome! You can create a ticket for any of the categories listed below. Please ensure you select the appropriate category for your issue. If your concern doesn't align with any of the options provided, feel free to create a general support ticket. " \
-    "Thank you! Warn system for wrong tickets. " \
-    "A straight warning will be issued for opening incorrect tickets for incorrect reasons. It is quite clear what ticket you need to open for what problem.", color = discord.Colour.dark_blue())
-    await interaction.channel.send(embed=embed, view=ticket_launcher())
-    await interaction.response.send_message("Ticket system launched!", ephemeral = True)
+    embed = discord.Embed(
+        title="Welcome! You can create a ticket for any of the categories listed below...",
+        color=discord.Colour.dark_blue()
+    )
+    await interaction.response.send_message(embed=embed, view=ticket_launcher(), ephemeral=True)
 
 
 # ---------------- Run bot + web ----------------
