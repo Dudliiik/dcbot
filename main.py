@@ -123,7 +123,6 @@ class CloseButton(discord.ui.View):
     @discord.ui.button(label="Close", emoji="🔒", style=discord.ButtonStyle.gray)
     async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer(ephemeral=True)
-        await discord.utils.sleep_until(discord.utils.utcnow() + discord.utils.timedelta(seconds=0.5))
         await interaction.channel.delete()
 
 
