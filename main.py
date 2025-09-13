@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Bot is running!"
+    return "Bot is running"
 
 def run_web():
     port = int(os.environ.get("PORT", 10000))  # Render poskytuje PORT
@@ -37,7 +37,7 @@ help_cooldowns = {}
 # ---------------- Commands ----------------
 @bot.event
 async def on_ready():
-    print(f"✅ User logged as {bot.user}")
+    print(f"User logged as {bot.user}")
 
 @bot.command()
 async def feedback(ctx):
@@ -103,7 +103,7 @@ async def help(ctx):
 
 
 @commands.has_permissions(administrator = True)
-@bot.command(aliases = ["purge", "delete"])
+@bot.command(aliases = ["purge", "clear"])
 async def delete(ctx, amount : int):
     await ctx.channel.purge(limit=amount+1)
 
