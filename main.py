@@ -59,8 +59,8 @@ class aclient(discord.Client):
 
 client = aclient()
 
-@bot.command(name='ticket')
-async def ticketing(interaction:discord.Interaction):
+@bot.command()
+async def ticketing(ctx, interaction:discord.Interaction):
     embed = discord.Embed(title="Welcome! You can create a ticket for any of the categories listed below. Please ensure you select the appropriate category for your issue. If your concern doesn't align with any of the options provided, feel free to create a general support ticket. Thank you!" \
     "Warn system for wrong tickets. " \
     "A straight warning will be issued for opening incorrect tickets for incorrect reasons. It is quite clear what ticket you need to open for what problem.", color=discord.Colour.dark_blue())
