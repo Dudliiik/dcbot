@@ -115,6 +115,16 @@ from discord.ext import commands
 GUILD_ID = 1415013619246039082  # tvoj server ID
 PREFIX = "!"
 
+# ---------------- Close button ----------------
+class CloseButton(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.red)
+    async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Ticket will be deleted...", ephemeral=True)
+        await interaction.channel.delete()
+
 # ---------------- Dropdown pre kategórie ----------------
 class TicketCategory(discord.ui.Select):
     def __init__(self):
@@ -126,13 +136,16 @@ class TicketCategory(discord.ui.Select):
         super().__init__(placeholder="Select a category...", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
+        # Odošli rýchlu odpoveď, aby sa interaction neprepadla
+        await interaction.response.send_message("Creating your ticket...", ephemeral=True)
+
         category = self.values[0]
         user = interaction.user
 
         # Kontrola existujúceho ticket kanálu
         ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}-{user.discriminator}")
         if ticket_channel:
-            await interaction.response.send_message(f"You already have a ticket: {ticket_channel.mention}", ephemeral=True)
+            await interaction.followup.send(f"You already have a ticket: {ticket_channel.mention}", ephemeral=True)
             return
 
         overwrites = {
@@ -156,24 +169,13 @@ class TicketCategory(discord.ui.Select):
         view = CloseButton()
         await channel.send(content=user.mention, embed=embed, view=view)
 
-        # Jedna odpoveď na interakciu – inak "interaction failed"
-        await interaction.response.send_message(f"Your ticket has been created: {channel.mention}", ephemeral=True)
+        await interaction.followup.send(f"Your ticket has been created: {channel.mention}", ephemeral=True)
 
 # ---------------- View pre dropdown ----------------
 class TicketDropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.add_item(TicketCategory())
-
-# ---------------- Close button ----------------
-class CloseButton(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
-
-    @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.red)
-    async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Ticket will be deleted...", ephemeral=True)
-        await interaction.channel.delete()
 
 # ---------------- Bot setup ----------------
 intents = discord.Intents.all()
@@ -199,7 +201,7 @@ async def ticket_command(ctx):
         color=discord.Color.green()
     )
     await ctx.send(embed=embed, view=TicketDropdownView())
-
+    
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
     Thread(target=run_web).start()
