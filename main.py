@@ -119,9 +119,9 @@ PREFIX = "!"
 class TicketCategory(discord.ui.Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label="Partnership", description="Create a partnership ticket"),
-            discord.SelectOption(label="Role Request", description="Request a new role"),
-            discord.SelectOption(label="Support", description="General support ticket")
+            discord.SelectOption(label="Partnership", description="Create a partnership ticket", emoji="🎫"),
+            discord.SelectOption(label="Role Request", description="Request a new role", emoji="⭐"),
+            discord.SelectOption(label="Support", description="General support ticket", emoji="📩")
         ]
         super().__init__(placeholder="Select a category...", min_values=1, max_values=1, options=options)
 
@@ -155,6 +155,8 @@ class TicketCategory(discord.ui.Select):
 
         view = CloseButton()
         await channel.send(content=user.mention, embed=embed, view=view)
+
+        # Jedna odpoveď na interakciu – inak "interaction failed"
         await interaction.response.send_message(f"Your ticket has been created: {channel.mention}", ephemeral=True)
 
 # ---------------- View pre dropdown ----------------
