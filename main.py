@@ -103,7 +103,7 @@ async def help(ctx):
 
 
 @commands.has_permissions(administrator = True)
-@client.command(aliases = ["purge", "delete"])
+@bot.command(aliases = ["purge", "delete"])
 async def delete(ctx, amount : int):
     await ctx.channel.purge(limit=amount+1)
 
