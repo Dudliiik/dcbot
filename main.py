@@ -107,55 +107,6 @@ async def delete(ctx, amount : int):
     await ctx.channel.purge(limit=amount+1)
     confirmation = await ctx.send(f"Purged {amount} messages", delete_after = 3)
 
-
-# ---------------- Ticket System ----------------
-import discord
-from discord import app_commands, utils
-
-GUILD_ID = 1415013619246039082  # tvoj server
-
-class TicketLauncher(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
-
-    @discord.ui.button(label="Create a ticket", style=discord.ButtonStyle.blurple)
-    async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        ticket = utils.get(interaction.guild.channels, name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}")
-        if ticket:
-            await interaction.response.send_message(f"You already have a ticket at {ticket.mention}!", ephemeral=True)
-        else:
-            overwrites = {
-                interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
-                interaction.user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
-                interaction.guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)
-            }
-            channel = await interaction.guild.create_text_channel(
-                name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}",
-                overwrites=overwrites
-            )
-            await channel.send(f"{interaction.user.mention} created a ticket!")
-            await interaction.response.send_message(f"Opened a ticket - {channel.mention}", ephemeral=True)
-
-class MyClient(discord.Client):
-    def __init__(self):
-        intents = discord.Intents.all()
-        super().__init__(intents=intents)
-        self.tree = app_commands.CommandTree(self)
-
-    async def setup_hook(self):
-        guild = discord.Object(id=GUILD_ID)
-
-        # Definovanie slash commandu
-        @self.tree.command(guild=guild, name="ticket", description="Launches the ticket system")
-        async def ticketing(interaction: discord.Interaction):
-            embed = discord.Embed(title="Ticket System", description="Click the button to create a ticket!", color=discord.Color.blue())
-            await interaction.response.send_message(embed=embed, view=TicketLauncher(), ephemeral=True)
-
-        await self.tree.sync(guild=guild)
-        print("Slash commands synced!")
-
-client = MyClient()
-
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
     Thread(target=run_web).start()
