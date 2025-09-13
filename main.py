@@ -112,7 +112,7 @@ async def delete(ctx, amount : int):
 import discord
 from discord.ext import commands
 
-GUILD_ID = 1415013619246039082  # tvoj server ID
+GUILD_ID = 1415013619246039082 
 PREFIX = "!"
 
 # ---------------- Close button ----------------
@@ -120,24 +120,23 @@ class CloseButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Close", style=discord.ButtonStyle.red)
     async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Ticket will be deleted...", ephemeral=True)
+        await interaction.response.send_message("Ticket deleting", ephemeral=True)
         await interaction.channel.delete()
 
 # ---------------- Dropdown pre kategórie ----------------
 class TicketCategory(discord.ui.Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label="Partnership", description="Create a partnership ticket", emoji="🎫"),
-            discord.SelectOption(label="Role Request", description="Request a new role", emoji="⭐"),
-            discord.SelectOption(label="Support", description="General support ticket", emoji="📩")
+            discord.SelectOption(label="Partnership", description="Open this only if your server follows our guidelines", emoji="🎫"),
+            discord.SelectOption(label="Role Request", description="Open this ticket to apply for an artist rankup", emoji="⭐"),
+            discord.SelectOption(label="Support", description="Open this ticket if you have any general queries", emoji="📩")
         ]
-        super().__init__(placeholder="Select a category...", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="Select a topic...", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        # Odošli rýchlu odpoveď, aby sa interaction neprepadla
-        await interaction.response.send_message("Creating your ticket...", ephemeral=True)
+        await interaction.response.defer(ephemeral=True) 
 
         category = self.values[0]
         user = interaction.user
@@ -169,7 +168,7 @@ class TicketCategory(discord.ui.Select):
         view = CloseButton()
         await channel.send(content=user.mention, embed=embed, view=view)
 
-        await interaction.followup.send(f"Your ticket has been created: {channel.mention}", ephemeral=True)
+        await interaction.followup.send(f"Ticket created - {channel.mention}", ephemeral=True)
 
 # ---------------- View pre dropdown ----------------
 class TicketDropdownView(discord.ui.View):
@@ -191,7 +190,7 @@ async def ticket_command(ctx):
             "Welcome! You can create a ticket for any of the categories listed below. "
             "Please ensure you select the appropriate category for your issue. "
             "If your concern doesn't align with any of the options provided, feel free to create a general support ticket. Thank you!\n\n"
-            "Warn system for wrong tickets.\n"
+            "**Warn system for wrong tickets.**\n"
             "A straight warning will be issued for opening incorrect tickets for incorrect reasons. "
             "It is quite clear what ticket you need to open for what problem."
         ),
