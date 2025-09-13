@@ -112,12 +112,13 @@ async def delete(ctx, amount : int):
 import discord
 from discord import app_commands, utils
 
-class ticket_launcher(discord.ui.View):
+class TicketLauncher(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Create a ticket", style=discord.ButtonStyle.blurple, custom_id="ticket_button")
-    async def ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def ticket_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Kontrola existujúceho ticket kanálu
         ticket = utils.get(interaction.guild.channels, name=f"ticket-{interaction.user.name}-{interaction.user.discriminator}")
         if ticket is not None:
             await interaction.response.send_message(f"You already have a ticket open at {ticket.mention}!", ephemeral=True)
@@ -135,32 +136,31 @@ class ticket_launcher(discord.ui.View):
             await channel.send(f"{interaction.user.mention} created a ticket!")
             await interaction.response.send_message(f"Opened a ticket - {channel.mention}", ephemeral=True)
 
-class aclient(discord.Client):
+class MyClient(discord.Client):
     def __init__(self):
-        intents = discord.Intents.default()
+        intents = discord.Intents.all()  # Potrebujeme prístup ku kanálom
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
-        self.synced = False
 
     async def setup_hook(self):
-        # Synchronizácia slash commandov
-        guild = discord.Object(id=1415013619246039082)
+        # Synchronizácia slash commandov na konkrétnom serveri
+        guild = discord.Object(id=1415013619246039082)  # Zmeň na svoj guild ID
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync(guild=guild)
+        print("Slash commands synced!")
 
     async def on_ready(self):
         print(f"We have logged in as {self.user}.")
 
-client = aclient()
+client = MyClient()
 
-@client.tree.command(guild=discord.Object(id=1415013619246039082), name='ticket', description='Launches the ticketing system')
+@client.tree.command(guild=discord.Object(id=1415013619246039082), name="ticket", description="Launches the ticketing system")
 async def ticketing(interaction: discord.Interaction):
     embed = discord.Embed(
         title="Welcome! You can create a ticket for any of the categories listed below...",
         color=discord.Colour.dark_blue()
     )
-    await interaction.response.send_message(embed=embed, view=ticket_launcher(), ephemeral=True)
-
+    await interaction.response.send_message(embed=embed, view=TicketLauncher(), ephemeral=True)
 
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
