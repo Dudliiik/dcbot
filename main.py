@@ -103,9 +103,10 @@ async def help(ctx):
 
 
 @commands.has_permissions(administrator = True)
-@bot.command(aliases = ["purge", "clear"])
+@bot.command(aliases = ["purge"])
 async def delete(ctx, amount : int):
     await ctx.channel.purge(limit=amount+1)
+    await ctx.send("Sucesfully purged {amount} messages")
 
 # ---------------- Run bot + web ----------------
 if __name__ == "__main__":
