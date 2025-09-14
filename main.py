@@ -115,10 +115,11 @@ class TicketCategory(discord.ui.Select):
             }
         }
 
-        ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}", category="Role Request, Partnership")
-        if ticket_channel:
-            await interaction.followup.send(f"You already have a ticket - {ticket_channel.mention}", ephemeral=True)
-            return
+        if category != "Support":  
+           ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}")
+           if ticket_channel:
+               await interaction.followup.send(f"You already have a ticket - {ticket_channel.mention}", ephemeral=True)
+               return
 
         overwrites = {
             interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
@@ -148,7 +149,7 @@ class TicketCategory(discord.ui.Select):
         else:
             content = ping_roles
 
-        await channel.send(content=f"{user.mention}, {ping_roles}", embed=embed, view=view)
+        await channel.send(content=content, embed=embed, view=view)
 
         await interaction.followup.send(f"Ticket created - {channel.mention}", ephemeral=True)
 
