@@ -152,11 +152,9 @@ async def send_ping(ctx, role_id, cd_name):
         return
     if not ctx.message.attachments:
         if cd_name == "feedback":
-            await ctx.send("You must attach an image to ping feedback!")
+            await ctx.send("You must attach an image to ping Feedback!")
         elif cd_name == "wip":
             await ctx.send("You must attach an image to ping WIP!")
-        else:
-            await ctx.send("You must attach an image!")
         return
     await ctx.send(f"<@&{role_id}>")
 
@@ -176,8 +174,18 @@ async def delete(ctx, amount: int):
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["ticket"])
 async def ticket_command(ctx):
-    embed = discord.Embed(title="Open a ticket!", description="Select a category below.", color=discord.Color.blue())
-    await ctx.send(embed=embed, view=TicketDropdownView())
+    embed = discord.Embed(
+        title="Open a ticket!",
+        description=(
+            "Welcome! You can create a ticket for any of the categories listed below. "
+            "Please ensure you select the appropriate category for your issue. "
+            "If your concern doesn't align with any of the options provided, feel free to create a general support ticket. Thank you!\n\n"
+            "**Warn system for wrong tickets.**\n"
+            "A straight warning will be issued for opening incorrect tickets for incorrect reasons. "
+            "It is quite clear what ticket you need to open for what problem."
+        ),
+        color=discord.Color.blue()
+    )
 
 # ---------------- Run ----------------
 if __name__ == "__main__":
