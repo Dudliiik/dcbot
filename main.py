@@ -150,7 +150,7 @@ async def send_ping(ctx, role_id, cd_name):
     if msg:
         await ctx.send(msg)
         return
-    if not ctx.message.attachments:
+    if cd_name in ["feedback", "wip"] and not ctx.message.attachments:
         if cd_name == "feedback":
             await ctx.send("You must attach an image to ping Feedback!")
         elif cd_name == "wip":
@@ -163,13 +163,14 @@ async def feedback(ctx): await send_ping(ctx, 1135502050575261758, "feedback")
 @bot.command()
 async def wip(ctx): await send_ping(ctx, 1282267309477728317, "wip")
 @bot.command()
-async def help(ctx): await send_ping(ctx, 1135502182825852988, "help")
+async def help(ctx): await send_ping(ctx, 1135502182825852988, "help")  # funguje aj bez attachmentu
 
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["purge"])
 async def delete(ctx, amount: int):
-    await ctx.channel.purge(limit=amount+1)
-    await ctx.send(f"Purged {amount} messages", delete_after=3)
+    # odstráni správy + ihneď pošle potvrdzovaciu správu
+    deleted = await ctx.channel.purge(limit=amount+1)
+    await ctx.send(f"Purged {len(deleted)} messages", delete_after=3)
 
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["ticket"])
@@ -186,6 +187,7 @@ async def ticket_command(ctx):
         ),
         color=discord.Color.blue()
     )
+    await ctx.send(embed=embed, view=TicketDropdownView())
 
 # ---------------- Run ----------------
 if __name__ == "__main__":
