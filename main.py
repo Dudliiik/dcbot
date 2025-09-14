@@ -99,11 +99,11 @@ class TicketCategory(discord.ui.Select):
             "Role Request":{
                 "title": "Role Request Ticket",
                 "description": "Thank you for contacting support.\n"
-                "Please refer to <#1102968475925876876> and make sure you send the amount"
-                "of thumbnails required for the rank you're applying for, as and when you open the"
-                "ticket. Make sure you link 5 minecraft based thumbnails at MINIMUM if you apply"
+                "Please refer to <#1102968475925876876> and make sure you send the amount of thumbnails required for the rank you're applying for, as and when you open the ticket."
+                "Make sure you link 5 minecraft based thumbnails at MINIMUM if you apply"
                 "for one of the artist roles.",
-                "ping": [1156543738861064192]
+                "ping": [1156543738861064192],
+                "ping_user":False
             },
             "Support": {
                 "title":"Support Ticket",
