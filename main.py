@@ -116,6 +116,22 @@ GUILD_ID = 1415013619246039082
 PREFIX = "!"
 
 # ---------------- Close button ----------------
+class CloseButtons(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.red)
+    async def confirm(self, interaction:discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Ticket closed", ephemeral=True)
+        await interaction.channel.delete
+
+    
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.gray)
+    async def cancel(self,interaction:discord.Interaction, button:discord.ui.Button):
+        await interaction.response.send_message("Close canceled", ephemeral=True)
+        self.stop()
+
+
 class CloseButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
