@@ -115,6 +115,11 @@ class TicketCategory(discord.ui.Select):
             }
         }
 
+        ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}", category="Role Request, Partnership")
+        if ticket_channel:
+            await interaction.followup.send(f"You already have a ticket - {ticket_channel.mention}", ephemeral=True)
+            return
+
         overwrites = {
             interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
             user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
