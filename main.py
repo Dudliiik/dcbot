@@ -32,106 +32,18 @@ feedback_cooldowns = {}
 wip_cooldowns = {}       
 help_cooldowns = {}      
 
-# ---------------- Commands ----------------
-
-@bot.event
-async def on_ready():
-    print(f"User logged as {bot.user}")
-    if not hasattr(bot, "views_added"):
-        bot.add_view(TicketDropdownView())
-        bot.add_view(CloseButton())
-        bot.views_added = True
-
-@bot.command()
-async def feedback(ctx):
-    now = time.time()
-    user_id = ctx.author.id
-    last_used = feedback_cooldowns.get(user_id, 0)
-    cooldown_seconds = 7200  # 2 hodiny
-
-    if now - last_used < cooldown_seconds:
-        remaining = cooldown_seconds - (now - last_used)
-        hours = int(remaining // 3600)
-        minutes = int((remaining % 3600) // 60)
-        seconds = int(remaining % 60)
-        await ctx.send(f"You can ping Feedback again in {hours}h {minutes}m {seconds}s!")
-        return
-
-    if len(ctx.message.attachments) == 0:
-        await ctx.send("You have to attach an image to ping Feedback!")
-        return
-
-    feedback_cooldowns[user_id] = now
-    await ctx.send("<@&1135502050575261758>")  # ID Feedback role
-
-@bot.command()
-async def wip(ctx):
-    now = time.time()
-    user_id = ctx.author.id
-    last_used = wip_cooldowns.get(user_id, 0)
-    cooldown_seconds = 7200  # 2 hodiny
-
-    if now - last_used < cooldown_seconds:
-        remaining = cooldown_seconds - (now - last_used)
-        hours = int(remaining // 3600)
-        minutes = int((remaining % 3600) // 60)
-        seconds = int(remaining % 60)
-        await ctx.send(f"You can ping WIP again in {hours}h {minutes}m {seconds}s!")
-        return
-
-    if len(ctx.message.attachments) == 0:
-        await ctx.send("You have to attach an image to ping WIP!")
-        return
-
-    wip_cooldowns[user_id] = now
-    await ctx.send("<@&1282267309477728317>")  # ID WIP role
-
-@bot.command()
-async def help(ctx):
-    now = time.time()
-    user_id = ctx.author.id
-    last_used = help_cooldowns.get(user_id, 0)
-    cooldown_seconds = 7200  # 2 hodiny
-
-    if now - last_used < cooldown_seconds:
-        remaining = cooldown_seconds - (now - last_used)
-        hours = int(remaining // 3600)
-        minutes = int((remaining % 3600) // 60)
-        seconds = int(remaining % 60)
-        await ctx.send(f"You can use Help again in {hours}h {minutes}m {seconds}s!")
-        return
-
-    help_cooldowns[user_id] = now
-    await ctx.send("<@&1135502182825852988>")  # ID Help role
-
-
-@commands.has_permissions(administrator = True)
-@bot.command(aliases = ["purge"])
-async def delete(ctx, amount : int):
-    await ctx.channel.purge(limit=amount+1)
-    confirmation = await ctx.send(f"Purged {amount} messages", delete_after = 3)
-
-
-# ---------------------------------------------------------
-import discord
-from discord.ext import commands
-
-GUILD_ID = 1415013619246039082 
-PREFIX = "!"
-
-# ---------------- Close button ----------------
+# ---------------- Ticket Views ----------------
 class CloseButtons(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=60)
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.red)
-    async def confirm(self, interaction:discord.Interaction, button: discord.ui.Button):
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message("Ticket closed", ephemeral=True)
-        await interaction.channel.delete
+        await interaction.channel.delete()   # FIX: pridane ()
 
-    
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.gray)
-    async def cancel(self,interaction:discord.Interaction, button:discord.ui.Button):
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message("Close canceled", ephemeral=True)
         self.stop()
 
@@ -147,10 +59,10 @@ class CloseButton(discord.ui.View):
             description="Are you sure about closing this ticket?",
             color=discord.Colour.dark_blue()
         )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        # keď klikne na Close → pošle embed s Confirm/Cancel
+        await interaction.response.send_message(embed=embed, view=CloseButtons(), ephemeral=True)
 
 
-# ---------------- Dropdown pre kategórie ----------------
 class TicketCategory(discord.ui.Select):
     def __init__(self):
         options = [
@@ -195,13 +107,96 @@ class TicketCategory(discord.ui.Select):
 
         await interaction.followup.send(f"Ticket created - {channel.mention}", ephemeral=True)
 
-# ---------------- View pre dropdown ----------------
+
 class TicketDropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.add_item(TicketCategory())
 
-# ---------------- Prefix command !ticket ----------------
+# ---------------- Events ----------------
+@bot.event
+async def on_ready():
+    print(f"✅ Logged in as {bot.user}")
+
+    # pridáme view-y iba raz
+    if not getattr(bot, "views_added", False):
+        bot.add_view(TicketDropdownView())
+        bot.add_view(CloseButton())
+        bot.views_added = True
+
+# ---------------- Prefix Commands ----------------
+@bot.command()
+async def feedback(ctx):
+    now = time.time()
+    user_id = ctx.author.id
+    last_used = feedback_cooldowns.get(user_id, 0)
+    cooldown_seconds = 7200  # 2 hodiny
+
+    if now - last_used < cooldown_seconds:
+        remaining = cooldown_seconds - (now - last_used)
+        hours = int(remaining // 3600)
+        minutes = int((remaining % 3600) // 60)
+        seconds = int(remaining % 60)
+        await ctx.send(f"You can ping Feedback again in {hours}h {minutes}m {seconds}s!")
+        return
+
+    if len(ctx.message.attachments) == 0:
+        await ctx.send("You have to attach an image to ping Feedback!")
+        return
+
+    feedback_cooldowns[user_id] = now
+    await ctx.send("<@&1135502050575261758>")  # ID Feedback role
+
+
+@bot.command()
+async def wip(ctx):
+    now = time.time()
+    user_id = ctx.author.id
+    last_used = wip_cooldowns.get(user_id, 0)
+    cooldown_seconds = 7200  # 2 hodiny
+
+    if now - last_used < cooldown_seconds:
+        remaining = cooldown_seconds - (now - last_used)
+        hours = int(remaining // 3600)
+        minutes = int((remaining % 3600) // 60)
+        seconds = int(remaining % 60)
+        await ctx.send(f"You can ping WIP again in {hours}h {minutes}m {seconds}s!")
+        return
+
+    if len(ctx.message.attachments) == 0:
+        await ctx.send("You have to attach an image to ping WIP!")
+        return
+
+    wip_cooldowns[user_id] = now
+    await ctx.send("<@&1282267309477728317>")  # ID WIP role
+
+
+@bot.command()
+async def help(ctx):
+    now = time.time()
+    user_id = ctx.author.id
+    last_used = help_cooldowns.get(user_id, 0)
+    cooldown_seconds = 7200  # 2 hodiny
+
+    if now - last_used < cooldown_seconds:
+        remaining = cooldown_seconds - (now - last_used)
+        hours = int(remaining // 3600)
+        minutes = int((remaining % 3600) // 60)
+        seconds = int(remaining % 60)
+        await ctx.send(f"You can use Help again in {hours}h {minutes}m {seconds}s!")
+        return
+
+    help_cooldowns[user_id] = now
+    await ctx.send("<@&1135502182825852988>")  # ID Help role
+
+
+@commands.has_permissions(administrator=True)
+@bot.command(aliases=["purge"])
+async def delete(ctx, amount: int):
+    await ctx.channel.purge(limit=amount+1)
+    await ctx.send(f"Purged {amount} messages", delete_after=3)
+
+
 @bot.command(name="ticket")
 async def ticket_command(ctx):
     embed = discord.Embed(
