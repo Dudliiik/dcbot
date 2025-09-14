@@ -130,13 +130,13 @@ class TicketCategory(discord.ui.Select):
             reason=f"Ticket opened by {user} for {category}"
         )
 
+        config = categories[category]
+
         embed = discord.Embed(
             title=config["title"],
-            description=config["description"],
+            description=config["description"].format(user=user),
             color=discord.Color.blue()
         )
-
-        config = categories[category]
 
         view = CloseButton()
         ping_roles = " ".join(f"<@&{rid}>" for rid in config["ping"])
