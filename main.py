@@ -170,7 +170,7 @@ async def help(ctx): await send_ping(ctx, 1135502182825852988, "help")  # funguj
 async def delete(ctx, amount: int):
     # odstráni správy + ihneď pošle potvrdzovaciu správu
     deleted = await ctx.channel.purge(limit=amount+1)
-    await ctx.send(f"Purged {len(deleted)} messages", delete_after=3)
+    await ctx.send(f"Purged {amount} messages", delete_after=3)
 
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["ticket"])
