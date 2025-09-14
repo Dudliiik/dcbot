@@ -131,16 +131,16 @@ class TicketCategory(discord.ui.Select):
         )
 
         embed = discord.Embed(
-            title=f"{category} Ticket",
-            description="Wait for staff to reply to your ticket.",
+            title=config["title"],
+            description=config["description"],
             color=discord.Color.blue()
         )
 
         config = categories[category]
-        
+
         view = CloseButton()
         ping_roles = " ".join(f"<@&{rid}>" for rid in config["ping"])
-        await channel.send(content=f"{user.mention},{ping_roles}", embed=embed, view=view)
+        await channel.send(content=f"{user.mention}, {ping_roles}", embed=embed, view=view)
 
         await interaction.followup.send(f"Ticket created - {channel.mention}", ephemeral=True)
 
