@@ -7,10 +7,12 @@ from threading import Thread
 from dotenv import load_dotenv
 
 # ---------------- Load .env ----------------
+
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 # ---------------- Flask ----------------
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -22,12 +24,20 @@ def run_web():
     app.run(host="0.0.0.0", port=port)
 
 # ---------------- Discord bot ----------------
+
 intents = discord.Intents.default()
 intents.message_content = True 
 
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
+# ---------------- Bot event ----------------
+
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
+
 # ---------------- Cooldowns ----------------
+
 feedback_cooldowns = {}  
 wip_cooldowns = {}       
 help_cooldowns = {}      
@@ -70,7 +80,7 @@ class TicketCategory(discord.ui.Select):
             discord.SelectOption(label="Role Request", description="Open this ticket to apply for an artist rankup", emoji="⭐"),
             discord.SelectOption(label="Support", description="Open this ticket if you have any general queries", emoji="📩")
         ]
-        super().__init__(placeholder="Select a topic...", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="Select a topic", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True) 
@@ -78,8 +88,32 @@ class TicketCategory(discord.ui.Select):
         category = self.values[0]
         user = interaction.user
 
-        # Kontrola existujúceho ticket kanálu
-        ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}-{user.discriminator}")
+        categories = {
+            "Partnership": {
+                "title": "Partnership Ticket",
+                "description":"Thanks {user.name} for contacting the partnership team of **Thumbnailers**!\n"
+                "Send your server's ad, and the ping you're expecting with any other additional details.\n"
+                "Our team will respond to you shortly.",
+                "ping": [1136118197725171813, 1102975816062730291]
+            },
+            "Role Request":{
+                "title": "Role Request Ticket",
+                "description": "Thank you for contacting support.\n"
+                "Please refer to <#1102968475925876876> and make sure you send the amount"
+                "of thumbnails required for the rank you're applying for, as and when you open the"
+                "ticket. Make sure you link 5 minecraft based thumbnails at MINIMUM if you apply"
+                "for one of the artist roles.",
+                "ping": [1156543738861064192]
+            },
+            "Support": {
+                "title":"Support Ticket",
+                "description": "Thanks {user.name} for contacting the support team of **Thumbnailers**!\n"
+                "Please explain your case so we can help you as quickly as possible!",
+                "ping": [1102976554759368818, 1102975816062730291]
+            }
+        }
+
+        ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}")
         if ticket_channel:
             await interaction.followup.send(f"You already have a ticket - {ticket_channel.mention}", ephemeral=True)
             return
@@ -91,19 +125,22 @@ class TicketCategory(discord.ui.Select):
         }
 
         channel = await interaction.guild.create_text_channel(
-            name=f"ticket-{user.name}-{user.discriminator}",
+            name=f"ticket-{user.name}",
             overwrites=overwrites,
             reason=f"Ticket opened by {user} for {category}"
         )
 
         embed = discord.Embed(
-            title=f"Ticket: {category}",
+            title=f"{category} Ticket",
             description="Wait for staff to reply to your ticket.",
             color=discord.Color.blue()
         )
 
+        config = categories[category]
+        
         view = CloseButton()
-        await channel.send(content=user.mention, embed=embed, view=view)
+        ping_roles = " ".join(f"<@&{rid}>" for rid in config["ping"])
+        await channel.send(content=f"{user.mention},{ping_roles}", embed=embed, view=view)
 
         await interaction.followup.send(f"Ticket created - {channel.mention}", ephemeral=True)
 
@@ -113,18 +150,17 @@ class TicketDropdownView(discord.ui.View):
         super().__init__(timeout=None)
         self.add_item(TicketCategory())
 
-# ---------------- Events ----------------
-@bot.event
-async def on_ready():
-    print(f"✅ Logged in as {bot.user}")
 
-# ---------------- Prefix Commands ----------------
+# --------------------- Commands ---------------------
+
+
+# ------------ Feedback ------------
 @bot.command()
 async def feedback(ctx):
     now = time.time()
     user_id = ctx.author.id
     last_used = feedback_cooldowns.get(user_id, 0)
-    cooldown_seconds = 7200  # 2 hodiny
+    cooldown_seconds = 7200  
 
     if now - last_used < cooldown_seconds:
         remaining = cooldown_seconds - (now - last_used)
@@ -139,15 +175,16 @@ async def feedback(ctx):
         return
 
     feedback_cooldowns[user_id] = now
-    await ctx.send("<@&1135502050575261758>")  # ID Feedback role
+    await ctx.send("<@&1135502050575261758>")  
 
+# ------------ WIP ------------
 
 @bot.command()
 async def wip(ctx):
     now = time.time()
     user_id = ctx.author.id
     last_used = wip_cooldowns.get(user_id, 0)
-    cooldown_seconds = 7200  # 2 hodiny
+    cooldown_seconds = 7200  
 
     if now - last_used < cooldown_seconds:
         remaining = cooldown_seconds - (now - last_used)
@@ -162,15 +199,16 @@ async def wip(ctx):
         return
 
     wip_cooldowns[user_id] = now
-    await ctx.send("<@&1282267309477728317>")  # ID WIP role
+    await ctx.send("<@&1282267309477728317>")  
 
+# ------------ Help ------------
 
 @bot.command()
 async def help(ctx):
     now = time.time()
     user_id = ctx.author.id
     last_used = help_cooldowns.get(user_id, 0)
-    cooldown_seconds = 7200  # 2 hodiny
+    cooldown_seconds = 7200  
 
     if now - last_used < cooldown_seconds:
         remaining = cooldown_seconds - (now - last_used)
@@ -181,8 +219,9 @@ async def help(ctx):
         return
 
     help_cooldowns[user_id] = now
-    await ctx.send("<@&1135502182825852988>")  # ID Help role
+    await ctx.send("<@&1135502182825852988>")  
 
+# ------------ Purge command ------------
 
 @commands.has_permissions(administrator=True)
 @bot.command(aliases=["purge"])
@@ -190,6 +229,7 @@ async def delete(ctx, amount: int):
     await ctx.channel.purge(limit=amount+1)
     await ctx.send(f"Purged {amount} messages", delete_after=3)
 
+# ------------ Ticket setup command ------------
 
 @bot.command(name="ticket")
 async def ticket_command(ctx):
@@ -203,7 +243,7 @@ async def ticket_command(ctx):
             "A straight warning will be issued for opening incorrect tickets for incorrect reasons. "
             "It is quite clear what ticket you need to open for what problem."
         ),
-        color=discord.Color.green()
+        color=discord.Color.blue()
     )
     await ctx.send(embed=embed, view=TicketDropdownView())
 
