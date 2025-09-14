@@ -197,11 +197,6 @@ class TicketDropdownView(discord.ui.View):
         super().__init__(timeout=None)
         self.add_item(TicketCategory())
 
-# ---------------- Bot setup ----------------
-@bot.event
-async def on_ready():
-    print(f"Logged in as {bot.user}")
-
 # ---------------- Prefix command !ticket ----------------
 @bot.command(name="ticket")
 async def ticket_command(ctx):
