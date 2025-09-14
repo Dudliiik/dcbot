@@ -115,11 +115,15 @@ class TicketCategory(discord.ui.Select):
             }
         }
 
-        if category != "Support":  
-           ticket_channel = discord.utils.get(interaction.guild.channels, name=f"ticket-{user.name}")
-           if ticket_channel:
-               await interaction.followup.send(f"You already have a ticket - {ticket_channel.mention}", ephemeral=True)
-               return
+        channel_name = f"ticket-{category.lower().replace(' ', '-')}-{user.name}"
+
+        if category != "Support":
+            if discord.utils.get(interaction.guild.channels, name=channel_name):
+                await interaction.followup.send(
+                    f"You already have a ticket in {category} category.", ephemeral=True
+                )
+                return
+                
 
         overwrites = {
             interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
