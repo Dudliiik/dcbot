@@ -151,7 +151,12 @@ async def send_ping(ctx, role_id, cd_name):
         await ctx.send(msg)
         return
     if not ctx.message.attachments:
-        await ctx.send("You must attach an image!")
+        if cd_name == "feedback":
+            await ctx.send("You must attach an image to ping feedback!")
+        elif cd_name == "wip":
+            await ctx.send("You must attach an image to ping WIP!")
+        else:
+            await ctx.send("You must attach an image!")
         return
     await ctx.send(f"<@&{role_id}>")
 
