@@ -168,6 +168,7 @@ class TicketDropdownView(discord.ui.View):
 
 
 # ------------ Feedback ------------
+
 @bot.command()
 async def feedback(ctx):
     now = time.time()
@@ -184,6 +185,11 @@ async def feedback(ctx):
         return
 
     if len(ctx.message.attachments) == 0:
+        await ctx.send("You have to attach an image to ping Feedback!")
+        return
+
+    attachment = ctx.message.attachments[0]
+    if not attachment.filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp")):
         await ctx.send("You have to attach an image to ping Feedback!")
         return
 
@@ -211,8 +217,13 @@ async def wip(ctx):
         await ctx.send("You have to attach an image to ping WIP!")
         return
 
+    attachment = ctx.message.attachments[0]
+    if not attachment.filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp")):
+        await ctx.send("You have to attach an image to ping WIP!")
+        return
+
     wip_cooldowns[user_id] = now
-    await ctx.send("<@&1282267309477728317>")  
+    await ctx.send("<@&1282267309477728317>")    
 
 # ------------ Help ------------
 
