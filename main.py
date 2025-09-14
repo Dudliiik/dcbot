@@ -63,14 +63,37 @@ class CloseButton(discord.ui.View):
 
 # ---------------- Ticket Logic ----------------
 categories = {
-    "Partnership": {"title":"Partnership Ticket", "desc":"Thanks {user} for contacting partnership team!", "ping":[1136118197725171813,1102975816062730291], "ping_user":True},
-    "Role Request": {"title":"Role Request Ticket", "desc":"Send your role request details.", "ping":[1156543738861064192], "ping_user":False},
-    "Support": {"title":"Support Ticket", "desc":"Please explain your support request.", "ping":[1102976554759368818,1102975816062730291], "ping_user":True}
+    "Partnership": {
+        "title":"Partnership Ticket",
+        "desc":"Thanks {user.name} for contacting the partnership team of **Thumbnailers**!\n"
+               "Send your server's ad, and the ping you're expecting with any other additional details.\n"
+               "Our team will respond to you shortly.",
+        "ping":[1136118197725171813,1102975816062730291],
+        "ping_user":True,
+        "emoji":"🎫"
+    },
+    "Role Request": {
+        "title":"Role Request Ticket",
+        "desc":"Thank you for contacting support.\n"
+               "Please refer to <#1102968475925876876> and make sure you send the amount of thumbnails required for the rank you're applying for, as and when you open the ticket."
+               "Make sure you link 5 minecraft based thumbnails at MINIMUM if you apply for one of the artist roles.",
+        "ping":[1156543738861064192],
+        "ping_user":False,
+        "emoji":"⭐"
+    },
+    "Support": {
+        "title":"Support Ticket",
+        "desc":"Thanks {user.name} for contacting the support team of **Thumbnailers**!\n"
+               "Please explain your case so we can help you as quickly as possible!",
+        "ping":[1102976554759368818,1102975816062730291],
+        "ping_user":True,
+        "emoji":"📩"
+    }
 }
 
 class TicketCategory(discord.ui.Select):
     def __init__(self):
-        options = [discord.SelectOption(label=k) for k in categories]
+        options = [discord.SelectOption(label=k, description="Open a ticket for "+k, emoji=categories[k]["emoji"]) for k in categories]
         super().__init__(placeholder="Select a topic", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
@@ -79,7 +102,6 @@ class TicketCategory(discord.ui.Select):
         user = interaction.user
         channel_name = f"{category.lower().replace(' ','-')}-{user.name}"
 
-        # ❌ len 1 ticket okrem Support
         if category != "Support" and discord.utils.get(interaction.guild.channels, name=channel_name):
             await interaction.followup.send(f"You already have a ticket in {category} category.", ephemeral=True)
             return
