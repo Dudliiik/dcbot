@@ -118,12 +118,6 @@ class TicketDropdownView(discord.ui.View):
 async def on_ready():
     print(f"✅ Logged in as {bot.user}")
 
-    # pridáme view-y iba raz
-    if not getattr(bot, "views_added", False):
-        bot.add_view(TicketDropdownView())
-        bot.add_view(CloseButton())
-        bot.views_added = True
-
 # ---------------- Prefix Commands ----------------
 @bot.command()
 async def feedback(ctx):
