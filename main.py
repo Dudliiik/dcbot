@@ -115,7 +115,7 @@ class TicketCategory(discord.ui.Select):
             }
         }
 
-        channel_name = f"ticket-{category.lower().replace(' ', '-')}-{user.name}"
+        channel_name = f"{category.lower().replace(' ', '-')}-{user.name}"
 
         if category != "Support":
             if discord.utils.get(interaction.guild.channels, name=channel_name):
@@ -132,7 +132,7 @@ class TicketCategory(discord.ui.Select):
         }
 
         channel = await interaction.guild.create_text_channel(
-            name=f"ticket-{user.name}",
+            name=channel_name,
             overwrites=overwrites,
             reason=f"Ticket opened by {user} for {category}"
         )
