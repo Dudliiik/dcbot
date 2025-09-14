@@ -94,7 +94,8 @@ class TicketCategory(discord.ui.Select):
                 "description":"Thanks {user.name} for contacting the partnership team of **Thumbnailers**!\n"
                 "Send your server's ad, and the ping you're expecting with any other additional details.\n"
                 "Our team will respond to you shortly.",
-                "ping": [1136118197725171813, 1102975816062730291]
+                "ping": [1136118197725171813, 1102975816062730291],
+                "ping_user": True
             },
             "Role Request":{
                 "title": "Role Request Ticket",
@@ -103,13 +104,14 @@ class TicketCategory(discord.ui.Select):
                 "Make sure you link 5 minecraft based thumbnails at MINIMUM if you apply"
                 "for one of the artist roles.",
                 "ping": [1156543738861064192],
-                "ping_user":False
+                "ping_user": False
             },
             "Support": {
                 "title":"Support Ticket",
                 "description": "Thanks {user.name} for contacting the support team of **Thumbnailers**!\n"
                 "Please explain your case so we can help you as quickly as possible!",
-                "ping": [1102976554759368818, 1102975816062730291]
+                "ping": [1102976554759368818, 1102975816062730291],
+                "ping_user": True
             }
         }
 
@@ -140,6 +142,12 @@ class TicketCategory(discord.ui.Select):
 
         view = CloseButton()
         ping_roles = " ".join(f"<@&{rid}>" for rid in config["ping"])
+
+        if config.get("ping_user", True):  
+            content = f"{user.mention} {ping_roles}"
+        else:
+            content = ping_roles
+
         await channel.send(content=f"{user.mention}, {ping_roles}", embed=embed, view=view)
 
         await interaction.followup.send(f"Ticket created - {channel.mention}", ephemeral=True)
@@ -231,7 +239,8 @@ async def delete(ctx, amount: int):
 
 # ------------ Ticket setup command ------------
 
-@bot.command(name="ticket")
+@commands.has_permissions(administrator=True)
+@bot.command(aliases=["ticket"])
 async def ticket_command(ctx):
     embed = discord.Embed(
         title="Open a ticket!",
