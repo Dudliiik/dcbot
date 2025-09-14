@@ -37,6 +37,10 @@ help_cooldowns = {}
 @bot.event
 async def on_ready():
     print(f"User logged as {bot.user}")
+    if not hasattr(bot, "views_added"):
+        bot.add_view(TicketDropdownView())
+        bot.add_view(CloseButton())
+        bot.views_added = True
 
 @bot.command()
 async def feedback(ctx):
